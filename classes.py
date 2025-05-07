@@ -95,8 +95,6 @@ class Cell():
         self._win.draw_line(Line(center_self, center_to), color)
 
 class Maze():
-    _cells = []
-    
     def __init__(
         self,
         x1,
@@ -105,8 +103,9 @@ class Maze():
         num_cols,
         cell_size_x,
         cell_size_y,
-        win
+        win=None
     ):
+        self._cells = []
         self.x1 = x1
         self.y1 = y1
         self.num_rows = num_rows
@@ -130,15 +129,24 @@ class Maze():
             current_y += self.cell_size_y
             current_x = self.x1
         
+        self._break_entrance_and_exit()
         for i in range(self.num_cols):
             for j in range(self.num_rows):
                 self._draw_cell(i,j)
     
     def _draw_cell(self, i, j):
+        if self.win is None:
+            return None
         cell = self._cells[i][j]
         cell.draw()
         self._animate()
     
     def _animate(self):
+        if self.win is None:
+            return None
         self.win.redraw()
-        time.sleep(0.1)
+        time.sleep(0.05)
+
+    def _break_entrance_and_exit(self):
+        self._cells[0][0].has_left_wall = False
+        self._cells[-1][-1].has_right_wall = False
