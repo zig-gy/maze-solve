@@ -62,6 +62,9 @@ class Cell():
         else:
             self._y1 = point1.y
             self._y2 = point2.y
+    
+    def get_center_point(self):
+        return Point((self._x1 + self._x2) / 2, (self._y1 + self._y2) / 2)
         
     def draw(self):        
         top_left = Point(self._x1, self._y1)
@@ -74,10 +77,17 @@ class Cell():
             self._win.draw_line(wall, "black")
         if self.has_left_wall:
             wall = Line(top_left, bot_left)
-            self._win.draw_line(wall, "blue")
+            self._win.draw_line(wall, "black")
         if self.has_right_wall:
             wall = Line(top_right, bot_right)
-            self._win.draw_line(wall, "red")
+            self._win.draw_line(wall, "black")
         if self.has_top_wall:
             wall = Line(top_left, top_right)
-            self._win.draw_line(wall, "yellow")
+            self._win.draw_line(wall, "black")
+
+    def draw_move(self, to_cell, undo=False):
+        center_self = self.get_center_point()
+        center_to = to_cell.get_center_point()
+        color = "gray" if undo else "red"
+        
+        self._win.draw_line(Line(center_self, center_to), color)
