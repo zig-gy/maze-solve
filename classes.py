@@ -51,6 +51,7 @@ class Cell():
         self.has_right_wall = True
         self.has_top_wall = True
         self.has_bottom_wall = True
+        self.visited = False
         self._win = win
         if point1.x > point2.x:
             self._x1 = point2.x
@@ -150,3 +151,12 @@ class Maze():
     def _break_entrance_and_exit(self):
         self._cells[0][0].has_left_wall = False
         self._cells[-1][-1].has_right_wall = False
+
+    def _break_walls_r(self, i, j):
+        self._cells[i][j].visited = True
+        while True:
+            places = []
+            if i - 1 >= 0 and not self._cells[i-1][j].visited:
+                places.append(self._cells[i-1][j])
+            if j - 1 >= 0 and not self._cells[i][j-1].visited:
+                places.append(self._cells[i][j-1])
