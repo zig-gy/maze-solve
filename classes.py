@@ -135,6 +135,7 @@ class Maze():
         self._create_cells()
         self._break_entrance_and_exit()
         self._break_walls_r(0,0)
+        self._reset_cells_visited()
     
     def _create_cells(self):
         current_x = self.x1
@@ -172,7 +173,7 @@ class Maze():
         self._cells[-1][-1].has_right_wall = False
 
     def _break_walls_r(self, i, j):
-        print("loop", i, j)
+        # print("loop", i, j)
         self._cells[i][j].visited = True
         while True:
             places = []
@@ -205,3 +206,26 @@ class Maze():
                 self._cells[i][j].has_left_wall = False
                 self._cells[i][j-1].has_right_wall = False
             self._break_walls_r(next_cell[0], next_cell[1])
+
+    def _reset_cells_visited(self):
+        for i in range(len(self._cells)):
+            for j in range(len(self._cells[i])):
+                self._cells[i][j].visited = False
+
+    def solve(self):
+        i, j = 0, 0
+        return self._solve_r(i, j)
+        
+    def _solve_r(self, i, j):
+        self._animate()
+        self._cells[i][j].visited = True
+        if self.cells[i][j] == self.cells[-1][-1]:
+            return True
+        if i > 0 and not self._cell[i][j].has_left_wall and not self._cell[i-1][j].visited:
+            current = self._cell[i][j]
+            post = self._cell[i-1][j]
+            current.draw_move(post)
+            if self._solve_r(i-1, j):
+                return True
+            post.draw_move(current, True)
+        
