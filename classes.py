@@ -1,4 +1,5 @@
 import time
+import random
 
 from tkinter import Tk, BOTH, Canvas
 
@@ -21,6 +22,7 @@ class Window():
         self.is_running = True
         while self.is_running:
             self.redraw()
+        print("Window closed...")
 
     def close(self):
         self.is_running = False
@@ -78,15 +80,27 @@ class Cell():
         if self.has_bottom_wall:
             wall = Line(bot_left, bot_right)
             self._win.draw_line(wall, "black")
+        else:
+            wall = Line(bot_left, bot_right)
+            self._win.draw_line(wall, "white")
         if self.has_left_wall:
             wall = Line(top_left, bot_left)
             self._win.draw_line(wall, "black")
+        else:
+            wall = Line(top_left, bot_left)
+            self._win.draw_line(wall, "white")
         if self.has_right_wall:
             wall = Line(top_right, bot_right)
             self._win.draw_line(wall, "black")
+        else:
+            wall = Line(top_right, bot_right)
+            self._win.draw_line(wall, "white")
         if self.has_top_wall:
             wall = Line(top_left, top_right)
             self._win.draw_line(wall, "black")
+        else:
+            wall = Line(top_left, top_right)
+            self._win.draw_line(wall, "white")
 
     def draw_move(self, to_cell, undo=False):
         center_self = self.get_center_point()
@@ -104,7 +118,8 @@ class Maze():
         num_cols,
         cell_size_x,
         cell_size_y,
-        win=None
+        win=None,
+        seed=None
     ):
         self._cells = []
         self.x1 = x1
@@ -114,7 +129,12 @@ class Maze():
         self.cell_size_x = cell_size_x
         self.cell_size_y = cell_size_y
         self.win = win
+        if seed:
+            random.seed(seed)
+        
         self._create_cells()
+        self._break_entrance_and_exit()
+        self._break_walls_r(0,0)
     
     def _create_cells(self):
         current_x = self.x1
@@ -129,8 +149,7 @@ class Maze():
             self._cells.append(row_cells)
             current_y += self.cell_size_y
             current_x = self.x1
-        
-        self._break_entrance_and_exit()
+
         for i in range(self.num_cols):
             for j in range(self.num_rows):
                 self._draw_cell(i,j)
@@ -153,10 +172,36 @@ class Maze():
         self._cells[-1][-1].has_right_wall = False
 
     def _break_walls_r(self, i, j):
+        print("loop", i, j)
         self._cells[i][j].visited = True
         while True:
             places = []
-            if i - 1 >= 0 and not self._cells[i-1][j].visited:
-                places.append(self._cells[i-1][j])
-            if j - 1 >= 0 and not self._cells[i][j-1].visited:
-                places.append(self._cells[i][j-1])
+            if i > 0 and not self._cells[i-1][j].visited:
+                places.append((i-1, j))
+            if j > 0 and not self._cells[i][j-1].visited:
+                places.append((i, j-1))
+            if i + 1 < len(self._cells) and not self._cells[i+1][j].visited:
+                places.append((i+1, j))
+            if j + 1 < len(self._cells[i]) and not self._cells[i][j+1].visited:
+                places.append((i, j+1))
+            
+            if len(places) == 0:
+                self._draw_cell(i, j)
+                return
+        
+            direction = random.randrange(len(places))
+            next_cell = places[direction]
+            
+            if next_cell[0] == i + 1:
+                self._cells[i][j].has_bottom_wall = False
+                self._cells[i + 1][j].has_top_wall = False
+            if next_cell[0] == i - 1:
+                self._cells[i][j].has_top_wall = False
+                self._cells[i-1][j].has_bottom_wall = False
+            if next_cell[1] == j + 1:
+                self._cells[i][j].has_right_wall = False
+                self._cells[i][j+1].has_left_wall = False
+            if next_cell[1] == j - 1:
+                self._cells[i][j].has_left_wall = False
+                self._cells[i][j-1].has_right_wall = False
+            self._break_walls_r(next_cell[0], next_cell[1])
